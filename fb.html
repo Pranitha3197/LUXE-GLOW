@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LuxeGlow App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+*{box-sizing:border-box;font-family:Poppins,Arial}
+body{margin:0;background:#f6f6f6}
+
+/* HEADER */
+header{
+  background:#ff1493;
+  color:white;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+  position:sticky;
+  top:0;
+}
+
+/* SECTIONS */
+.section{display:none;padding:15px}
+.section.active{display:block}
+
+/* BUTTON */
+button{
+  background:#ff1493;
+  color:white;
+  border:none;
+  padding:14px;
+  width:100%;
+  border-radius:30px;
+  font-size:16px;
+  cursor:pointer;
+}
+
+/* INPUT */
+input,select{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:20px;
+  border:1px solid #ccc;
+}
+
+/* LOGIN */
+.login-bg{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(135deg,#ff1493,#ff69b4);
+}
+.login{
+  width:340px;
+  background:white;
+  padding:30px;
+  border-radius:30px;
+  box-shadow:0 25px 45px rgba(0,0,0,.25);
+  text-align:center;
+}
+.input-box{position:relative}
+.input-box i{
+  position:absolute;
+  left:15px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#ff1493;
+}
+.input-box input{padding-left:45px}
+
+/* CARDS */
+#parlourList{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:12px;
+}
+
+.card{
+  background:white;
+  border-radius:20px;
+  margin:0;
+  overflow:hidden;
+  box-shadow:0 5px 15px rgba(0,0,0,.12);
+}
+.card img{width:100%;height:160px;object-fit:cover}
+.card div{padding:12px}
+.card h3{margin:0;color:#ff1493}
+
+/* SERVICES */
+.services{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:12px;
+
+}
+.service{
+  background:white;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 4px 10px rgba(0,0,0,.1);
+}
+.service img{width:100%;height:160px;object-fit:cover}
+.service div{padding:8px}
+
+/* PAYMENT */
+.amount-box{
+  background:white;
+  padding:18px;
+  border-radius:20px;
+  text-align:center;
+  box-shadow:0 5px 15px rgba(0,0,0,.12);
+  margin-bottom:15px;
+}
+.amount-box h2{color:#ff1493}
+
+.payment-card{
+  background:white;
+  border-radius:20px;
+  padding:15px;
+  margin:12px 0;
+  box-shadow:0 6px 15px rgba(0,0,0,.12);
+  display:flex;
+  gap:15px;
+  align-items:center;
+  cursor:pointer;
+  border:2px solid transparent;
+}
+.payment-card i{font-size:26px;color:#ff1493}
+.payment-card.active{
+  border-color:#ff1493;
+  background:#fff0f7;
+}
+
+/* MISC */
+.back{color:#ff1493;font-weight:bold;cursor:pointer;margin-bottom:10px}
+.success{text-align:center;color:green;font-weight:bold}
+</style>
+</head>
+
+<body>
+
+<header>LuxeGlow</header>
+
+<!-- LOGIN -->
+<div id="login" class="section active">
+  <div class="login-bg">
+    <div class="login">
+      <h2>Welcome to LuxeGlow</h2>
+      <p>Book • Style • Glow ✨</p>
+
+      <div class="input-box">
+        <i class="fa fa-user"></i>
+        <input id="username" placeholder="Username">
+      </div>
+
+      <div class="input-box">
+        <i class="fa fa-lock"></i>
+        <input id="password" type="password" placeholder="Password">
+      </div>
+
+      <button onclick="login()">Login / Register</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="section">
+  <h3>Parlours Near You</h3>
+
+  <select id="locationFilter" onchange="loadParlours()">
+    <option value="">All Locations</option>
+    <option value="Gachibowli">Gachibowli</option>
+    <option value="Hitech City">Hitech City</option>
+    <option value="Madhapur">Madhapur</option>
+    <option value="Banjara Hills">Banjara Hills</option>
+  </select>
+
+  <div id="parlourList"></div>
+</div>
+
+<!-- SERVICES -->
+<div id="servicesPage" class="section">
+  <div class="back" onclick="openSection('home')">← Back</div>
+  <h3 id="parlourName"></h3>
+  <div class="services" id="serviceList"></div>
+</div>
+
+<!-- BOOKING -->
+<div id="booking" class="section">
+  <div class="back" onclick="openSection('servicesPage')">← Back</div>
+  <input id="custName" placeholder="Your Name">
+  <input type="date" id="date">
+  <input type="time" id="time">
+  <button onclick="saveBooking()">Continue</button>
+</div>
+
+<!-- PAYMENT -->
+<div id="payment" class="section">
+  <div class="back" onclick="openSection('booking')">← Back</div>
+
+  <div class="amount-box">
+    <h4>Payable Amount</h4>
+    <h2 id="payAmount"></h2>
+    <p id="payService"></p>
+  </div>
+
+  <div class="payment-card" onclick="selectPayment('UPI',this)">
+    <i class="fa-brands fa-google-pay"></i>
+    <div><b>UPI</b><p>GPay • PhonePe • Paytm</p></div>
+  </div>
+
+  <div class="payment-card" onclick="selectPayment('Card',this)">
+    <i class="fa-regular fa-credit-card"></i>
+    <div><b>Card</b><p>Credit / Debit</p></div>
+  </div>
+
+  <div id="cardDetails" style="display:none">
+    <input placeholder="Card Number">
+    <input placeholder="Expiry MM/YY">
+    <input placeholder="CVV">
+  </div>
+
+  <div class="payment-card" onclick="selectPayment('Cash',this)">
+    <i class="fa-solid fa-money-bill-wave"></i>
+    <div><b>Cash</b><p>Pay at parlour</p></div>
+  </div>
+
+  <button onclick="makePayment()">Pay Securely</button>
+</div>
+
+<!-- SUCCESS -->
+<div id="success" class="section">
+  <h3 class="success">✔ Booking Confirmed</h3>
+  <button onclick="openSection('home')">Go Home</button>
+</div>
+
+<script>
+const parlours=[
+ {name:"LuxeGlow Studio",location:"Gachibowli",img:"https://tse1.mm.bing.net/th/id/OIP.733VYI_0LnAG1ecCKcD7OQHaEK?rs=1&pid=ImgDetMain&o=7&rm=3",
+ services:[{name:"Hair Cut",price:"₹700",img:"https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f"},{name:"Facial",price:"₹1200",img:"data:image/jpeg;base64,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"},{name:"Hair Spa",price:"₹900",img:"https://images.unsplash.com/photo-1600948836101-f9ffda59d250"}]},
+ {name:"Glow Aura Salon",location:"Gachibowli",img:"https://images.unsplash.com/photo-1607746882042-944635dfe10e",
+  services:[{name:"Hair Styling",price:"₹1300"},{name:"Makeup",price:"₹3000"},{name:"Skin Polishing",price:"₹1500"},{name:"Manicure",price:"₹800"}]},
+ {name:"Urban Shine",location:"Hitech City",img:"https://images.unsplash.com/photo-1581579183366-d2e08bb5e7f7",
+  services:[{name:"Hair Spa",price:"₹2500"},{name:"Waxing",price:"₹1300"},{name:"Manicure",price:"₹900"},{name:"Pedicure",price:"₹1000"},{name:"Nail Art",price:"₹1499"},{name:"Gel NAil Extentions",price:"₹1699"}]},
+ {name:"Radiance Hub",location:"Madhapur",img:"https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9",
+  services:[{name:"Facial",price:"₹2200"},{name:"Manicure",price:"₹1200"},{name:"Pedicure",price:"₹1100"},{name:"Nail Art",price:"₹1299"},{name:"Body Spa",price:"₹2499"},{name:"Hair styling",price:"₹1100"},{name:"Saree Drapping",price:"₹900"},{name:"Bridal Makeup",price:"₹7999"}]},
+ {name:"Royal Looks",location:"Banjara Hills",img:"https://images.unsplash.com/photo-1522337660859-02fbefca4702",
+  services:[{name:"Bridal Makeup",price:"₹9500"},{name:"Hair Styling",price:"₹1099"},{name:"Saree Drapping",price:"₹1500"},{name:"manicure ",price:"₹999"},{name:"Pedicure",price:"₹1199"},{name:"Waxing",price:"₹1699"},{name:"Nail Art",price:"₹1199"},{name:"hair cut",price:"₹800"}]}
+];
+
+let selectedService={},selectedPayment="";
+
+function openSection(id){
+ document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+}
+
+async function login(){
+
+const username = document.getElementById("username").value;
+const password = document.getElementById("password").value;
+
+// basic validation
+if(!username || !password){
+  alert("Please enter username and password");
+  return;
+}
+
+try{
+
+const res = await fetch("http://localhost:5000/api/auth/login",{
+
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({username,password})
+
+});
+
+const data = await res.json();
+console.log(data);
+
+openSection("home");
+loadParlours();
+
+}catch(err){
+console.error(err);
+alert("Server not running ❌");
+}
+
+}
+
+function loadParlours(){
+ parlourList.innerHTML="";
+ const loc=locationFilter.value;
+ parlours.filter(p=>!loc||p.location===loc).forEach((p,i)=>{
+  parlourList.innerHTML+=`
+   <div class="card" onclick="openParlour(${i})">
+    <img src="${p.img}">
+    <div><h3>${p.name}</h3><p>${p.location}</p></div>
+   </div>`;
+ });
+}
+
+function openParlour(i){
+ openSection("servicesPage");
+ parlourName.innerText=parlours[i].name;
+ serviceList.innerHTML="";
+ parlours[i].services.forEach(s=>{
+  serviceList.innerHTML+=`
+   <div class="service" onclick="selectService('${s.name}','${s.price}')">
+    <img src="${s.img}">
+    <div><b>${s.name}</b><p>${s.price}</p></div>
+   </div>`;
+ });
+}
+
+function selectService(n,p){selectedService={name:n,price:p};openSection("booking");}
+
+async function saveBooking(){
+
+const name=document.getElementById("custName").value;
+const date=document.getElementById("date").value;
+const time=document.getElementById("time").value;
+
+
+await fetch("http://localhost:5000/api/booking/save",{
+
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+customer:name,
+service:selectedService.name,
+price:selectedService.price,
+date,
+time,
+payment:selectedPayment
+})
+
+
+});
+
+payService.innerText=selectedService.name;
+payAmount.innerText=selectedService.price;
+
+openSection("payment");
+
+}
+
+function selectPayment(p,el){
+ selectedPayment=p;
+ document.querySelectorAll(".payment-card").forEach(c=>c.classList.remove("active"));
+ el.classList.add("active");
+ cardDetails.style.display=p==="Card"?"block":"none";
+}
+
+function makePayment(){
+ if(!selectedPayment) return alert("Select payment method");
+ openSection("success");
+}
+</script>
+
+</body>
+</html>
